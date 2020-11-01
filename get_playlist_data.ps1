@@ -40,11 +40,35 @@ function Get-PlaylistData (
         foreach ($item in $result.items) {
             Write-Debug $item
             Write-Debug $item.snippet
+
+            # Remove linefeeds, as Excel won't be able to import them :-(
+            $item.snippet.description = (($item.snippet.description) -replace "`r`n","<br/>")
+            $item.snippet.description = (($item.snippet.description) -replace "`n","<br/>")
+            $item.snippet.description = (($item.snippet.description) -replace "`r","<br/>")
+
             $video = $($item.snippet)
+
+            # Parse suspecter track details
+            $Matches.Clear()
+
+            [regex]$yearRegex = '(?<year>\d\d\d\d)'
+            $yearMatches = $yearRegex.Matches($item.snippet.title)
+            $yearCount = ($yearMatches | Measure-Object).Count
+            $year = $yearMatches[$yearCount-1]
+            $video | Add-Member -MemberType NoteProperty -Name parsed_year -Value $year -Force
+
+            $null = $item.snippet.title -match " *(?<artist>[\&\w\. ]+) +- +(?<title>[\&\w\.\' ]+)"
+            # Add-Member -InputObject $item.snippet.title -NotePropertyName "parsed_artist" -NotePropertyValue $Matches['artist']
+            $video | Add-Member -MemberType NoteProperty -Name parsed_artist -Value $Matches['artist'] -Force
+            $video | Add-Member -MemberType NoteProperty -Name parsed_title -Value $Matches['title'] -Force
+
+            $null = $item.snippet.title -imatch " *(?<version>[\w\'\`"\. ]*(Groove|Instrumental|Mix|Version))" 
+            $video | Add-Member -MemberType NoteProperty -Name parsed_version -Value $Matches['version'] -Force
+
             $videoUrl = "https://www.youtube.com/watch?v=$($item.snippet.resourceId.videoId)"
-            $video = $video | Add-Member -MemberType NoteProperty -Name url -Value $videoUrl -Force
-            Write-Debug "item.snippet: $($item.snippet)"
-            $count = $videos.Add($item.snippet)
+            $video | Add-Member -MemberType NoteProperty -Name url -Value $videoUrl -Force
+            Write-Debug "video: $video"
+            $count = $videos.Add($video)
         }
         if ($count -gt $batchSize) {
             # Start displaying count after first batch of results
@@ -93,10 +117,9 @@ $exportDirectory = (Join-Path $scriptDirectory "data")
 $null = New-Item -ItemType Directory -Force -Path $exportDirectory 
 $baseExportName = $(Join-Path $exportDirectory "$($playListName -replace " ","-")-$(Get-Date -f "yyyyMMddHHmmss")")  
 $csvFileName = "${baseExportName}.csv"
-# Hide multiline description, Excel won't be able to import it :-(
-$videos | Select-Object  -Property position, title, publishedAt, url | Export-Csv -Path "$csvFileName" -NoTypeInformation
+$videos | Select-Object  -Property position, title, url, parsed_artist, parsed_title, parsed_version, parsed_year, publishedAt, description | Export-Csv -Path "$csvFileName" -NoTypeInformation -Encoding utf8BOM
 Write-Host "$csvFileName (can be imported into Excel)"
 
 $txtFileName = "${baseExportName}.txt"
-$videos | Format-Table -Property position, title, publishedAt, url, description | Out-File $txtFileName -Width 4096
+$videos | Format-Table -Property position, title, parsed_artist, parsed_title, parsed_version, parsed_year, publishedAt, url, description | Out-File $txtFileName -Width 4096
 Write-Host "$txtFileName"
