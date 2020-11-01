@@ -3,7 +3,7 @@
 .SYNOPSIS 
     Creates a list of items in a YouTube playlist
 #> 
-#Requires -Version 7
+#Requires -Version 5
 
 ### Arguments
 param ( 
@@ -61,7 +61,7 @@ Write-Information $MyInvocation.line
 $scriptDirectory = (Split-Path -parent -Path $MyInvocation.MyCommand.Path)
 $configFile = (Join-Path $scriptDirectory "config.json")
 if (Test-Path $configFile) {
-    $config       = (Get-Content $configFile | ConvertFrom-Json -NoEnumerate)
+    $config       = (Get-Content $configFile | ConvertFrom-Json)
     if (!$PSBoundParameters.ContainsKey('ApiKey')) {
         $ApiKey = $config.ApiKey
     }
@@ -89,8 +89,9 @@ Write-Host "Retrieving data for playlist '$playListName'..."
 $videos = Get-PlaylistData -ApiKey $ApiKey -PlaylistID $PlaylistID
 
 # Export to CSV and plain text
-$baseExportName = $(Join-Path (Get-Item (Split-Path -parent -Path $MyInvocation.MyCommand.Path)).FullName "data" "$($playListName -replace " ","-")-$(Get-Date -f "yyyyMMddHHmmss")")  
-$csvFileName = $(Join-Path (Get-Item (Split-Path -parent -Path $MyInvocation.MyCommand.Path)).FullName "data" "export-$(Get-Date -f "yyyy-MM-dd-HHmmss").csv") 
+$exportDirectory = (Join-Path $scriptDirectory "data") 
+$null = New-Item -ItemType Directory -Force -Path $exportDirectory 
+$baseExportName = $(Join-Path $exportDirectory "$($playListName -replace " ","-")-$(Get-Date -f "yyyyMMddHHmmss")")  
 $csvFileName = "${baseExportName}.csv"
 # Hide multiline description, Excel won't be able to import it :-(
 $videos | Select-Object  -Property position, title, publishedAt, url | Export-Csv -Path "$csvFileName" -NoTypeInformation
