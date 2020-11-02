@@ -3,7 +3,7 @@
 This repo contains a script to fetch YouTube playlist information. It fetches metadata (title, description, etc) and is NOT a video downloader.
 
 ## Pre-requisites
-This uses the YouTube Data [API](https://developers.google.com/youtube/v3/docs/), you'll need an API key to access it. This can be obtained [here](https://console.developers.google.com/). You can add the API key to the [settings.json](config.json.sample) file, so you don't have to pass it to the script:
+This uses the YouTube Data [API](https://developers.google.com/youtube/v3/docs/), you'll need an API key to access it. This can be obtained [here](https://console.developers.google.com/). You can add the API key to the [config.json](config.json.sample) file, so you don't have to pass it to the script:
 ```
 {
     "ApiKey" : "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
