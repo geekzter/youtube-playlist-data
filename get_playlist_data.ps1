@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 <# 
 .SYNOPSIS 
-    Creates a list of items in a YouTube playlist
+    Creates a list of items in a YouTube playlist, and stores it in the data subdirectory
 #> 
 #Requires -Version 5
 
@@ -117,7 +117,7 @@ $exportDirectory = (Join-Path $scriptDirectory "data")
 $null = New-Item -ItemType Directory -Force -Path $exportDirectory 
 $baseExportName = $(Join-Path $exportDirectory "$($playListName -replace " ","-")-$(Get-Date -f "yyyyMMddHHmmss")")  
 $csvFileName = "${baseExportName}.csv"
-$videos | Select-Object  -Property position, title, url, parsed_artist, parsed_title, parsed_version, parsed_year, publishedAt, description | Export-Csv -Path "$csvFileName" -NoTypeInformation -Encoding utf8BOM
+$videos | Select-Object  -Property position, title, parsed_artist, parsed_title, parsed_version, parsed_year, publishedAt, url, description | Export-Csv -Path "$csvFileName" -NoTypeInformation -Encoding utf8BOM
 Write-Host "$csvFileName (can be imported into Excel)"
 
 $txtFileName = "${baseExportName}.txt"
