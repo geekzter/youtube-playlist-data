@@ -2,6 +2,10 @@
 <# 
 .SYNOPSIS 
     Creates a list of items in a YouTube playlist, and stores it in the data subdirectory
+.EXAMPLE
+    ./search_playlist.ps1 -PlaylistID PLpjK416fmKwRIUjKK1sw8NV-ShTc9yb0F -ApiKey XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+.EXAMPLE
+    ./search_playlist.ps1 -PlaylistID PLpjK416fmKwRIUjKK1sw8NV-ShTc9yb0F
 #> 
 #Requires -Version 5
 
