@@ -1,4 +1,5 @@
 {
-    "ApiKey" : "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-    "PlaylistID" : "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    "ApiKey"               : "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "ClientCredentialFile" : "client_secret_000000000000-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com.json",
+    "PlaylistID"           : "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 }

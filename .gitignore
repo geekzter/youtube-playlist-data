@@ -1,6 +1,12 @@
 # Configuration
+client_credentials.json
+client_secret*.json
 config.json
+*.json
 
 # Ignore generated data
 *.csv
 *.txt
+
+# Ignore temporary files
+*.tmp*

@@ -3,17 +3,50 @@
 This repo contains a script to fetch YouTube playlist information. It fetches metadata (title, description, etc) and is NOT a video downloader. For playlists containing music tracks, it parses Artist, Title, Version, Year into distinct fields.
 
 ## Pre-requisites
-This uses the YouTube Data [API](https://developers.google.com/youtube/v3/docs/), you'll need an API key to access it. This can be obtained [here](https://console.developers.google.com/). You can add the API key to the [config.json](config.json.sample) file, so you don't have to pass it to the script:
+This uses the YouTube Data [API](https://developers.google.com/youtube/v3/docs/), which requires some configuration to access. 
+
+### Retrieval
+For retrieval operations (e.g. `get_playlist_data.ps1`) an API key is sufficient:
+
+- Go to the [Google Developer Console](https://console.developers.google.com/)
+- Create a project
+- Add the YouTube API
+- Create an API Key (under credentials)   
+
+You can add the API key to the [config.json](config.json.sample) file, so you don't have to pass it to the script:
 ```
 {
     "ApiKey" : "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 }
 ```
+
+### Updates
+For updates (e.g. `import_playlist.ps1`) you will need the following:
+
+- Go to the [Google Developer Console](https://console.developers.google.com/)
+- Create a project
+- Add the YouTube API
+- Create a Client Secret (under credentials)
+- Download the JSON file
+- Fetch a token:
+```
+oauth2l fetch --credentials ./client_secret_000000000000-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com.json --scope youtube.force-ssl
+```
+- This will construct you to open a browser and complete a OAuth flow
+
+You can add the API key to the [config.json](config.json.sample) file, so you don't have to pass it to the script:
+```
+{
+    "ClientCredentialFile" : "client_secret_000000000000-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com.json",
+}
+```
+
+### Tools
 You will also need [PowerShell](https://github.com/PowerShell/PowerShell#get-powershell) 5 or higher to run the script.
 
 
-## Running the script
-Get the id of the playlist from the playlist's page:
+## Running the playlist export script
+Get the id of the playlist from the playlist's page:    
 ![alt text](url.png "Playlist URL")
 
 Run the script by specifying the playlist id e.g.:
@@ -60,3 +93,12 @@ description    : LOONEY TUNES - VOLUME ONE JUST AS LONG AS I GOT YOU
                  OF RELEASE: U.S 
 
 ```
+
+## Running the playlist import script
+The CSV from a playlist export can be modified and imported into another playlist e.g.
+
+```
+./import_playlist.ps1 -CsvFile ./data/someplaylist-20201122112156.csv -PlaylistID XXXXXXXXXXXXXXXXXXXXXXXXXX
+```
+
+Please be aware that YouTube Data API requests are constrained by quota, and updates are a lot more 'expensive' than retrieval operations. See [YouTube Data API (v3) - Quota Calculator](https://developers.google.com/youtube/v3/determine_quota_cost).
