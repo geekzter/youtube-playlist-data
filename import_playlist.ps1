@@ -19,6 +19,7 @@ function Get-PlaylistData (
     [parameter(Mandatory=$true)][string]$PlaylistID=$null,
     [parameter(Mandatory=$false)][int]$BatchSize=50
 ) {
+    Write-Debug "Get-PlaylistData -PlaylistID $PlaylistID -BatchSize $BatchSize"
     $videos = New-Object -Type System.Collections.ArrayList
     do {
         try {
@@ -52,8 +53,15 @@ function Get-PlaylistData (
             Reset-BackOff
         }
         catch [Microsoft.PowerShell.Commands.HttpResponseException] {
+            Write-Debug "Microsoft.PowerShell.Commands.HttpResponseException"
             Display-ExceptionInformation
             switch -regex ($_.ErrorDetails.Message) {
+                "INTERNAL_ERROR" {
+                    Calculate-BackOff
+                }
+                "SERVICE_UNAVAILABLE" {
+                    Calculate-BackOff
+                }
                 "quotaExceeded" {  
                     Calculate-BackOff
                 }
@@ -70,8 +78,32 @@ function Get-PlaylistData (
             }
         }   
         catch [System.Net.Http.HttpRequestException] {
+            Write-Debug "System.Net.Http.HttpRequestException"
             Display-ExceptionInformation
             Calculate-BackOff
+        }
+        catch [System.Management.Automation.RuntimeException] {
+            Write-Debug "System.Management.Automation.RuntimeException"
+            Display-ExceptionInformation
+            switch -regex ($_.Exception.Message) {
+                "Max retries exceeded" {
+                    Calculate-BackOff
+                }
+                "nodename nor servname provided" {
+                    Calculate-BackOff
+                }
+                "There was a problem refreshing your current auth tokens" {
+                    Calculate-BackOff
+                }
+                default {
+                    Reset-BackOff
+                    break
+                }
+            }
+        }
+        catch {
+            Display-ExceptionInformation
+            break
         }
     } while ($(Continue-BackOff))
   
@@ -166,9 +198,16 @@ $imported = 0
             Reset-BackOff
         }
         catch [Microsoft.PowerShell.Commands.HttpResponseException] {
+            Write-Debug "Microsoft.PowerShell.Commands.HttpResponseException"
             Display-ExceptionInformation
             # https://developers.google.com/youtube/v3/docs/errors
             switch -regex ($_.ErrorDetails.Message) {
+                "INTERNAL_ERROR" {
+                    Calculate-BackOff
+                }
+                "SERVICE_UNAVAILABLE" {
+                    Calculate-BackOff
+                }
                 "playlistItemsNotAccessible" {
                     Reset-BackOff
                     Write-Host "Import skipped (item hidden) (source: $($importTrack.position)): $($importTrack.title)"
@@ -195,8 +234,32 @@ $imported = 0
             }
         }
         catch [System.Net.Http.HttpRequestException] {
+            Write-Debug "System.Net.Http.HttpRequestException"
             Display-ExceptionInformation
             Calculate-BackOff
+        }
+        catch [System.Management.Automation.RuntimeException] {
+            Write-Debug "System.Management.Automation.RuntimeException"
+            Display-ExceptionInformation
+            switch -regex ($_.Exception.Message) {
+                "Max retries exceeded" {
+                    Calculate-BackOff
+                }
+                "nodename nor servname provided" {
+                    Calculate-BackOff
+                }
+                "There was a problem refreshing your current auth tokens" {
+                    Calculate-BackOff
+                }
+                default {
+                    Reset-BackOff
+                    break
+                }
+            }
+        }
+        catch {
+            Display-ExceptionInformation
+            break outer
         }
     } while ($(Continue-BackOff))
 }
